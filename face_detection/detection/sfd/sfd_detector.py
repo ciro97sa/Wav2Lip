@@ -21,7 +21,12 @@ class SFDDetector(FaceDetector):
         if not os.path.isfile(path_to_detector):
             model_weights = load_url(models_urls['s3fd'])
         else:
-            model_weights = torch.load(path_to_detector)
+            #https://github.com/CSAILVision/places365/issues/25
+            from functools import partial
+            import pickle
+            pickle.load = partial(pickle.load, encoding="latin1")
+            pickle.Unpickler = partial(pickle.Unpickler, encoding="latin1")
+            model_weights = torch.load(path_to_detector, map_location=lambda storage, loc: storage, pickle_module=pickle)
 
         self.face_detector = s3fd()
         self.face_detector.load_state_dict(model_weights)
